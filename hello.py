@@ -5,11 +5,12 @@ from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_wtf import Form
 from wtforms import StringField, SubmitField
-from wtforms.validators import Required
+from wtforms.validators import Required, Email
 
 
 class NameForm(Form):
     name = StringField("What is your name?", validators=[Required()])
+    email = StringField("What is your UofT email address?", validators=[Required(), Email()])
     submit = SubmitField("Submit")
 
 
@@ -27,8 +28,13 @@ def index():
         if old_name and old_name != form.name.data:
             flash("You've changed your name!")
         session["name"] = form.name.data
+        session["email"] = form.email.data
+        if "utoronto" in session["email"]:
+            session["extra_text"] = "Your UofT email is {}".format(session["email"])
+        else:
+            session["extra_text"] = "Please use your UofT email"
         return redirect(url_for("index"))
-    return render_template("index.html", form=form, name=session.get("name"))
+    return render_template("index.html", form=form, name=session.get("name"), extra_text=session.get("extra_text"))
 
 @app.route("/user/<name>")
 def user(name):
